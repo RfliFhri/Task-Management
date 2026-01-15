@@ -1461,3 +1461,14 @@ section h2 {
     font-weight: 700;
     color: #667eea;
 }
+
+/* UI Improvements - Version 1 */
+.task-item {
+    border-radius: 12px;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+}
+
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+}
