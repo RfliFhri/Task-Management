@@ -362,5 +362,123 @@ export default class UserController {
             };
         }
     }
+
+    /**
+     * Get user profile with statistics
+     * @returns {Object} - Response dengan user profile dan stats
+     */
+    getUserProfile() {
+        try {
+            if (!this.currentUser) {
+                return {
+                    success: false,
+                    error: 'User harus login terlebih dahulu'
+                };
+            }
+            
+            // Get user's task statistics
+            const userTasks = this.taskRepository ? this.taskRepository.findByOwner(this.currentUser.id) : [];
+            
+            const stats = {
+                totalTasks: userTasks.length,
+                completedTasks: userTasks.filter(task => task.isCompleted).length,
+                pendingTasks: userTasks.filter(task => !task.isCompleted).length,
+                overdueTasks: userTasks.filter(task => task.isOverdue).length,
+                tasksByCategory: {}
+            };
+            
+            // Calculate completion rate
+            stats.completionRate = stats.totalTasks > 0 ? 
+                Math.round((stats.completedTasks / stats.totalTasks) * 100) : 0;
+            
+            // Group tasks by category
+            userTasks.forEach(task => {
+                const category = task.category;
+                if (!stats.tasksByCategory[category]) {
+                    stats.tasksByCategory[category] = 0;
+                }
+                stats.tasksByCategory[category]++;
+            });
+            
+            return {
+                success: true,
+                data: {
+                    user: {
+                        id: this.currentUser.id,
+                        username: this.currentUser.username,
+                        email: this.currentUser.email,
+                        fullName: this.currentUser.fullName,
+                        role: this.currentUser.role,
+                        createdAt: this.currentUser.createdAt,
+                        lastLoginAt: this.currentUser.lastLoginAt,
+                        preferences: this.currentUser.preferences
+                    },
+                    statistics: stats
+                }
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Update user preferences
+     * @param {Object} newPreferences - New preferences
+     * @returns {Object} - Response success atau error
+     */
+    updateUserPreferences(newPreferences) {
+        try {
+            if (!this.currentUser) {
+                return {
+                    success: false,
+                    error: 'User harus login terlebih dahulu'
+                };
+            }
+            
+            // Validate preferences
+            const validPreferences = ['theme', 'defaultCategory', 'emailNotifications', 'language'];
+            const invalidKeys = Object.keys(newPreferences).filter(key => !validPreferences.includes(key));
+            
+            if (invalidKeys.length > 0) {
+                return {
+                    success: false,
+                    error: `Invalid preference keys: ${invalidKeys.join(', ')}`
+                };
+            }
+            
+            // Update preferences
+            const updatedUser = this.userRepository.update(this.currentUser.id, {
+                preferences: {
+                    ...this.currentUser.preferences,
+                    ...newPreferences
+                }
+            });
+            
+            if (!updatedUser) {
+                return {
+                    success: false,
+                    error: 'Gagal mengupdate preferences'
+                };
+            }
+            
+            this.currentUser = updatedUser;
+            
+            return {
+                success: true,
+                data: updatedUser.preferences,
+                message: 'Preferences berhasil diupdate'
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
 }
 
