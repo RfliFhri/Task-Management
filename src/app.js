@@ -720,4 +720,5 @@ if (typeof module !== 'undefined' && module.exports) {
         handleRegister,
         app
     };
-}// Search functionality
+}
+// Work in progress
