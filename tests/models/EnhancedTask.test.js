@@ -223,4 +223,65 @@ describe('EnhancedTask Model', () => {
             expect(restoredTask.dueDate.getTime()).toBe(originalTask.dueDate.getTime());
         });
     });
+
+    describe('Category Management', () => {
+        let task;
+        
+        beforeEach(() => {
+            const taskData = TestDataFactory.createValidTaskData();
+            task = new EnhancedTask(taskData.title, taskData.description, taskData.ownerId);
+        });
+        
+        test('should have default category', () => {
+            expect(task.category).toBe('personal');
+        });
+        
+        test('should update category successfully', () => {
+            // Act
+            task.updateCategory('work');
+            
+            // Assert
+            expect(task.category).toBe('work');
+            expect(task.updatedAt).toBeInstanceOf(Date);
+        });
+        
+        test('should throw error for invalid category', () => {
+            // Act & Assert
+            expect(() => {
+                task.updateCategory('invalid-category');
+            }).toThrow('Kategori tidak valid');
+        });
+        
+        test('should return available categories', () => {
+            // Act
+            const categories = EnhancedTask.getAvailableCategories();
+            
+            // Assert
+            expect(categories).toBeInstanceOf(Array);
+            expect(categories).toContain('work');
+            expect(categories).toContain('personal');
+            expect(categories).toContain('study');
+            expect(categories.length).toBeGreaterThan(0);
+        });
+        
+        test('should get category display name', () => {
+            // Arrange
+            task.updateCategory('work');
+            
+            // Act
+            const displayName = task.getCategoryDisplayName();
+            
+            // Assert
+            expect(displayName).toBe('Work & Business');
+        });
+        
+        test('should check if task is in category', () => {
+            // Arrange
+            task.updateCategory('study');
+            
+            // Act & Assert
+            expect(task.isInCategory('study')).toBe(true);
+            expect(task.isInCategory('work')).toBe(false);
+        });
+    });
 });
