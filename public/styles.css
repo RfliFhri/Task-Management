@@ -1461,14 +1461,17 @@ section h2 {
     font-weight: 700;
     color: #667eea;
 }
-
-/* UI Improvements - Version 1 */
+/* UI Improvements - Combined */
 .task-item {
     border-radius: 12px;
     box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border: 1px solid #e1e8ed;
 }
 
 .btn {
     border-radius: 8px;
     font-weight: 600;
+    transition: all 0.3s ease;
+    text-transform: uppercase;
 }
