@@ -1,4 +1,4 @@
-import EnhancedTask from "../models/EnhancedTask";
+import EnhancedTask from "../models/EnhancedTask.js";
 
 /**
  * Task Controller - Mengatur alur kerja task management
