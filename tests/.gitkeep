@@ -1,0 +1,8 @@
+# Tests Directory
+
+This directory will contain test files as students progress through the course.
+
+Day 3: Comprehensive test suite with Jest
+- Unit tests for models and services
+- Integration tests for workflows
+- Property-based tests for correctness properties

@@ -1,0 +1,300 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Task Management System - Day 2</title>
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-container">
+      <!-- Header dengan User Info -->
+      <header class="app-header">
+        <div class="header-content">
+          <h1>Task Management System</h1>
+          <p class="subtitle">Day 2: Requirements & Design Patterns</p>
+
+          <div class="user-section">
+            <div id="loginSection" class="login-section">
+              <input
+                type="text"
+                id="usernameInput"
+                placeholder="Username"
+                required
+              />
+              <button id="loginBtn" class="btn btn-primary">Login</button>
+              <button id="registerBtn" class="btn btn-secondary">
+                Register
+              </button>
+            </div>
+
+            <div id="userInfo" class="user-info" style="display: none">
+              <span id="welcomeMessage">Selamat datang!</span>
+              <button id="logoutBtn" class="btn btn-outline">Logout</button>
+            </div>
+          </div>
+        </div>
+      </header>
+
+      <!-- Messages Container -->
+      <div id="messages" class="messages-container"></div>
+
+      <!-- Main Content -->
+      <main class="main-content" id="mainContent" style="display: none">
+        <!-- Task Statistics -->
+        <section class="stats-section">
+          <h2>Dashboard</h2>
+          <div id="taskStats" class="stats-container">
+            <!-- Stats akan di-render di sini -->
+          </div>
+        </section>
+
+        <!-- Quick Actions -->
+        <section class="quick-actions">
+          <button id="showOverdueBtn" class="btn btn-warning">
+            Lihat Overdue Tasks
+          </button>
+          <button id="showDueSoonBtn" class="btn btn-info">
+            Tasks Due Soon
+          </button>
+          <button id="exportDataBtn" class="btn btn-outline">
+            Export Data
+          </button>
+        </section>
+
+        <!-- Task Creation Form -->
+        <section class="form-section">
+          <h2>Buat Task Baru</h2>
+          <form id="taskForm" class="task-form">
+            <div class="form-row">
+              <div class="form-group">
+                <label for="taskTitle">Judul Task *</label>
+                <input
+                  type="text"
+                  id="taskTitle"
+                  name="title"
+                  required
+                  placeholder="Masukkan judul task"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="taskCategory">Kategori</label>
+                <select id="taskCategory" name="category">
+                  <option value="personal">Personal</option>
+                  <option value="work">Work</option>
+                  <option value="study">Study</option>
+                  <option value="health">Health</option>
+                  <option value="finance">Finance</option>
+                  <option value="other">Other</option>
+                </select>
+              </div>
+            </div>
+
+            <div class="form-group">
+              <label for="taskDescription">Deskripsi</label>
+              <textarea
+                id="taskDescription"
+                name="description"
+                placeholder="Deskripsi task (opsional)"
+                rows="3"
+              ></textarea>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="taskPriority">Prioritas</label>
+                <select id="taskPriority" name="priority">
+                  <option value="low">Low</option>
+                  <option value="medium" selected>Medium</option>
+                  <option value="high">High</option>
+                  <option value="urgent">Urgent</option>
+                </select>
+              </div>
+
+              <div class="form-group">
+                <label for="taskDueDate">Due Date</label>
+                <input type="date" id="taskDueDate" name="dueDate" />
+              </div>
+
+              <div class="form-group">
+                <label for="taskEstimatedHours">Estimasi Jam</label>
+                <input
+                  type="number"
+                  id="taskEstimatedHours"
+                  name="estimatedHours"
+                  min="0"
+                  step="0.5"
+                  placeholder="0"
+                />
+              </div>
+            </div>
+
+            <div class="form-row">
+              <div class="form-group">
+                <label for="taskTags">Tags (pisahkan dengan koma)</label>
+                <input
+                  type="text"
+                  id="taskTags"
+                  name="tags"
+                  placeholder="urgent, meeting, project"
+                />
+              </div>
+
+              <div class="form-group">
+                <label for="taskAssignee">Assign ke</label>
+                <select id="taskAssignee" name="assigneeId">
+                  <option value="self">Diri Sendiri</option>
+                  <!-- Options akan diisi dari JavaScript -->
+                </select>
+              </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-large">
+              Buat Task
+            </button>
+          </form>
+        </section>
+
+        <!-- Search dan Filter -->
+        <section class="search-filter-section">
+          <div class="search-container">
+            <h2>Cari & Filter Tasks</h2>
+            <div class="search-controls">
+              <input
+                type="text"
+                id="searchInput"
+                placeholder="Cari task..."
+                class="search-input"
+              />
+              <select id="sortSelect" class="sort-select">
+                <option value="createdAt-desc">Terbaru</option>
+                <option value="createdAt-asc">Terlama</option>
+                <option value="title-asc">Judul A-Z</option>
+                <option value="title-desc">Judul Z-A</option>
+                <option value="priority-desc">Prioritas Tinggi</option>
+                <option value="dueDate-asc">Due Date</option>
+              </select>
+            </div>
+          </div>
+
+          <div class="filter-container">
+            <h3>Filter berdasarkan:</h3>
+            <div class="filter-groups">
+              <div class="filter-group">
+                <h4>Status</h4>
+                <div class="filter-buttons">
+                  <button class="filter-btn active" data-filter="all">
+                    Semua
+                  </button>
+                  <button class="filter-btn" data-filter="pending">
+                    Pending
+                  </button>
+                  <button class="filter-btn" data-filter="in-progress">
+                    In Progress
+                  </button>
+                  <button class="filter-btn" data-filter="completed">
+                    Completed
+                  </button>
+                  <button class="filter-btn" data-filter="blocked">
+                    Blocked
+                  </button>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <h4>Prioritas</h4>
+                <div class="filter-buttons">
+                  <button class="filter-btn" data-filter="urgent">
+                    Urgent
+                  </button>
+                  <button class="filter-btn" data-filter="high">High</button>
+                  <button class="filter-btn" data-filter="medium">
+                    Medium
+                  </button>
+                  <button class="filter-btn" data-filter="low">Low</button>
+                </div>
+              </div>
+
+              <div class="filter-group">
+                <h4>Kategori</h4>
+                <div class="filter-buttons">
+                  <button class="filter-btn" data-filter="work">Work</button>
+                  <button class="filter-btn" data-filter="personal">
+                    Personal
+                  </button>
+                  <button class="filter-btn" data-filter="study">Study</button>
+                  <button class="filter-btn" data-filter="health">
+                    Health
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- Task List -->
+        <section class="tasks-section">
+          <div class="tasks-header">
+            <h2>Your Tasks</h2>
+            <div class="tasks-actions">
+              <button id="clearAllTasks" class="btn btn-danger">
+                Clear All
+              </button>
+              <button id="refreshTasks" class="btn btn-outline">Refresh</button>
+            </div>
+          </div>
+          <div id="taskList" class="task-list">
+            <!-- Tasks akan di-render di sini -->
+          </div>
+        </section>
+      </main>
+
+      <!-- Registration Modal -->
+      <div id="registerModal" class="modal" style="display: none">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Daftar User Baru</h3>
+            <button class="modal-close" id="closeRegisterModal">&times;</button>
+          </div>
+          <form id="registerForm" class="modal-form">
+            <div class="form-group">
+              <label for="regUsername">Username *</label>
+              <input type="text" id="regUsername" name="username" required />
+            </div>
+            <div class="form-group">
+              <label for="regEmail">Email *</label>
+              <input type="email" id="regEmail" name="email" required />
+            </div>
+            <div class="form-group">
+              <label for="regFullName">Nama Lengkap</label>
+              <input type="text" id="regFullName" name="fullName" />
+            </div>
+            <div class="modal-actions">
+              <button
+                type="button"
+                class="btn btn-secondary"
+                id="cancelRegister"
+              >
+                Batal
+              </button>
+              <button type="submit" class="btn btn-primary">Daftar</button>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <!-- Footer -->
+      <footer class="app-footer">
+        <p>
+          &copy; 2024 Software Engineering Shortcourse - Day 2 Implementation
+        </p>
+        <p>MVC Pattern • Repository Pattern • Enhanced Models</p>
+      </footer>
+    </div>
+
+    <!-- Load JavaScript modules dalam urutan yang benar -->
+
+    <script type="module" src="/src/app.js"></script>
+  </body>
+</html>

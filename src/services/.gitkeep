@@ -1,0 +1,6 @@
+# Services Directory
+
+This directory will contain business logic services as students progress through the course.
+
+Day 1: TaskService for basic operations
+Day 2: Enhanced services with proper separation of concerns
