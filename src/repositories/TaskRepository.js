@@ -135,6 +135,76 @@ export default class TaskRepository {
     findByTag(tag) {
         return this.findAll().filter(task => task.tags.includes(tag));
     }
+
+    /**
+     * Find tasks by category
+     * @param {string} category - Category to filter by
+     * @returns {EnhancedTask[]} - Array of tasks in category
+     */
+    findByCategory(category) {
+        return this.findAll().filter(task => task.category === category);
+    }
+
+    /**
+     * Get task statistics by category
+     * @param {string} userId - User ID (optional)
+     * @returns {Object} - Statistics grouped by category
+     */
+    getCategoryStats(userId = null) {
+        let tasks = userId ? this.findByOwner(userId) : this.findAll();
+        
+        const stats = {};
+        const categories = EnhancedTask.getAvailableCategories();
+        
+        // Initialize all categories with 0
+        categories.forEach(category => {
+            stats[category] = {
+                total: 0,
+                completed: 0,
+                pending: 0,
+                overdue: 0
+            };
+        });
+        
+        // Count tasks in each category
+        tasks.forEach(task => {
+            const category = task.category;
+            if (stats[category]) {
+                stats[category].total++;
+                
+                if (task.isCompleted) {
+                    stats[category].completed++;
+                } else {
+                    stats[category].pending++;
+                }
+                
+                if (task.isOverdue) {
+                    stats[category].overdue++;
+                }
+            }
+        });
+        
+        return stats;
+    }
+
+    /**
+     * Get most used categories
+     * @param {string} userId - User ID (optional)
+     * @param {number} limit - Number of categories to return
+     * @returns {Array} - Array of categories sorted by usage
+     */
+    getMostUsedCategories(userId = null, limit = 5) {
+        const stats = this.getCategoryStats(userId);
+        
+        return Object.entries(stats)
+            .sort(([,a], [,b]) => b.total - a.total)
+            .slice(0, limit)
+            .map(([category, data]) => ({
+                category,
+                count: data.total,
+                displayName: EnhancedTask.prototype.getCategoryDisplayName.call({ _category: category })
+            }));
+    }
     
     /**
      * Update task

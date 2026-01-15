@@ -312,4 +312,74 @@ describe('TaskController', () => {
             expect(response.error).toBe('Hanya owner yang bisa menghapus task');
         });
     });
+
+    describe('Category Management', () => {
+        let testTask;
+        
+        beforeEach(() => {
+            const taskData = TestDataFactory.createValidTaskData({ category: 'work' });
+            const createResponse = taskController.createTask(taskData);
+            testTask = createResponse.data;
+        });
+        
+        test('should get tasks by category', () => {
+            // Act
+            const response = taskController.getTasksByCategory('work');
+            
+            // Assert
+            TestAssertions.assertControllerResponse(response, true);
+            expect(response.data).toHaveLength(1);
+            expect(response.data[0].category).toBe('work');
+            expect(response.category).toBe('work');
+            expect(response.categoryDisplayName).toBe('Work & Business');
+        });
+        
+        test('should fail with invalid category', () => {
+            // Act
+            const response = taskController.getTasksByCategory('invalid');
+            
+            // Assert
+            TestAssertions.assertControllerResponse(response, false);
+            expect(response.error).toBe('Kategori tidak valid');
+        });
+        
+        test('should get category statistics', () => {
+            // Arrange - create tasks in different categories
+            taskController.createTask(TestDataFactory.createValidTaskData({ category: 'personal' }));
+            taskController.createTask(TestDataFactory.createValidTaskData({ category: 'study' }));
+            
+            // Act
+            const response = taskController.getCategoryStats();
+            
+            // Assert
+            TestAssertions.assertControllerResponse(response, true);
+            expect(response.data).toHaveProperty('byCategory');
+            expect(response.data).toHaveProperty('mostUsed');
+            expect(response.data.byCategory.work.total).toBe(1);
+            expect(response.data.byCategory.personal.total).toBe(1);
+            expect(response.data.byCategory.study.total).toBe(1);
+        });
+        
+        test('should update task category', () => {
+            // Act
+            const response = taskController.updateTaskCategory(testTask.id, 'personal');
+            
+            // Assert
+            TestAssertions.assertControllerResponse(response, true);
+            expect(response.data.category).toBe('personal');
+            expect(response.message).toContain('Personal');
+        });
+        
+        test('should get available categories', () => {
+            // Act
+            const response = taskController.getAvailableCategories();
+            
+            // Assert
+            TestAssertions.assertControllerResponse(response, true);
+            expect(response.data).toBeInstanceOf(Array);
+            expect(response.data.length).toBeGreaterThan(0);
+            expect(response.data[0]).toHaveProperty('value');
+            expect(response.data[0]).toHaveProperty('label');
+        });
+    });
 });
