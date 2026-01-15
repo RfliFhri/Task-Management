@@ -454,4 +454,187 @@ export default class TaskController {
             };
         }
     }
+
+    /**
+     * Get tasks by category
+     * @param {string} category - Category to filter by
+     * @returns {Object} - Response dengan filtered tasks
+     */
+    getTasksByCategory(category) {
+        try {
+            if (!this.currentUser) {
+                return {
+                    success: false,
+                    error: 'User harus login terlebih dahulu'
+                };
+            }
+            
+            // Validate category
+            const validCategories = EnhancedTask.getAvailableCategories();
+            if (!validCategories.includes(category)) {
+                return {
+                    success: false,
+                    error: 'Kategori tidak valid'
+                };
+            }
+            
+            // Get user's tasks in specific category
+            const userTasks = this.taskRepository.findByOwner(this.currentUser.id);
+            const categoryTasks = userTasks.filter(task => task.isInCategory(category));
+            
+            // Sort by priority and due date
+            const sortedTasks = this.taskRepository.sort(categoryTasks, 'priority', 'desc');
+            
+            return {
+                success: true,
+                data: sortedTasks,
+                count: sortedTasks.length,
+                category: category,
+                categoryDisplayName: EnhancedTask.prototype.getCategoryDisplayName.call({ _category: category })
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Get category statistics for current user
+     * @returns {Object} - Response dengan category statistics
+     */
+    getCategoryStats() {
+        try {
+            if (!this.currentUser) {
+                return {
+                    success: false,
+                    error: 'User harus login terlebih dahulu'
+                };
+            }
+            
+            const stats = this.taskRepository.getCategoryStats(this.currentUser.id);
+            const mostUsed = this.taskRepository.getMostUsedCategories(this.currentUser.id);
+            
+            return {
+                success: true,
+                data: {
+                    byCategory: stats,
+                    mostUsed: mostUsed,
+                    totalCategories: Object.keys(stats).filter(cat => stats[cat].total > 0).length
+                }
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Update task category
+     * @param {string} taskId - Task ID
+     * @param {string} newCategory - New category
+     * @returns {Object} - Response dengan updated task
+     */
+    updateTaskCategory(taskId, newCategory) {
+        try {
+            if (!this.currentUser) {
+                return {
+                    success: false,
+                    error: 'User harus login terlebih dahulu'
+                };
+            }
+            
+            const task = this.taskRepository.findById(taskId);
+            
+            if (!task) {
+                return {
+                    success: false,
+                    error: 'Task tidak ditemukan'
+                };
+            }
+            
+            // Check permission
+            if (task.ownerId !== this.currentUser.id) {
+                return {
+                    success: false,
+                    error: 'Hanya owner yang bisa mengubah kategori task'
+                };
+            }
+            
+            // Validate category
+            const validCategories = EnhancedTask.getAvailableCategories();
+            if (!validCategories.includes(newCategory)) {
+                return {
+                    success: false,
+                    error: 'Kategori tidak valid'
+                };
+            }
+            
+            // Update category
+            const updatedTask = this.taskRepository.update(taskId, { category: newCategory });
+            
+            return {
+                success: true,
+                data: updatedTask,
+                message: `Kategori task berhasil diubah ke ${EnhancedTask.prototype.getCategoryDisplayName.call({ _category: newCategory })}`
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Get available categories
+     * @returns {Object} - Response dengan available categories
+     */
+    getAvailableCategories() {
+        try {
+            const categories = EnhancedTask.getAvailableCategories();
+            const categoriesWithDisplay = categories.map(category => ({
+                value: category,
+                label: EnhancedTask.prototype.getCategoryDisplayName.call({ _category: category })
+            }));
+            
+            return {
+                success: true,
+                data: categoriesWithDisplay
+            };
+            
+        } catch (error) {
+            return {
+                success: false,
+                error: error.message
+            };
+        }
+    }
+
+    /**
+     * Handle events from task service
+     * @param {string} eventType - Event type
+     * @param {any} data - Event data
+     */
+    handleTaskServiceEvent(eventType, data) {
+        switch (eventType) {
+            case 'taskCreated':
+            case 'taskUpdated':
+            case 'taskDeleted':
+                // Refresh view when tasks change
+                this.refreshTasks();
+                break;
+            case 'error':
+                if (this.taskView && typeof this.taskView.showError === 'function') {
+                    this.taskView.showError(data.error);
+                }
+                break;
+        }
+    }
 }
