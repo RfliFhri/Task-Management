@@ -1,5 +1,5 @@
 // eslint-disable-next-line quotes
-import Task from "../models/Task";
+import Task from "../models/Task.js";
 /**
  * TaskService - Business logic layer for task management
  * 
